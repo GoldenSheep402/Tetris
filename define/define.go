@@ -11,8 +11,8 @@ const (
 )
 
 const (
-	WIDTH  = 10
-	HEIGHT = 15
+	WIDTH  = 15
+	HEIGHT = 20
 )
 
 var Tetrominoes = [][][]int{

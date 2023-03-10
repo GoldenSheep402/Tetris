@@ -51,16 +51,16 @@ func (g *Game) DropTetromino() {
 					top = y
 				}
 			}
-		}
-		for y := define.HEIGHT - 1; y >= 4; y-- {
-			if g.board[y][x] == 1 {
-				if button > y {
-					button = y
+			for y := define.HEIGHT - 1; y > 4; y-- {
+				if g.board[y][x] == 1 {
+					if button > y {
+						button = y
+					}
+				}
+				if (top != 0) && (dropHeight > (button - top)) {
+					dropHeight = button - top
 				}
 			}
-		}
-		if (top != 0) && (dropHeight > (button - top)) {
-			dropHeight = button - top
 		}
 	}
 
@@ -196,7 +196,7 @@ func (g *Game) CheckGameOver() {
 	// 检查游戏是否结束
 	for x := 0; x < define.WIDTH; x++ {
 		if g.board[4][x] == 1 {
-			fmt.Printf("Game Over!\n[Your Score: %d]", g.score)
+			fmt.Printf("[Game Over!]\n[Your Score: %d]\nThank you for playing!", g.score)
 			os.Exit(0)
 		}
 	}
@@ -226,12 +226,24 @@ func (g *Game) Start() {
 	}
 }
 
+func (g *Game) PrintInfo() {
+	fmt.Print("Tetris Game(SB version)\n" +
+		"Author: GS\n" + "" +
+		"Just write for fun." +
+		"Use e to turn the tetromino \n" +
+		"(You should decide the direction before move left or right)\n" +
+		"Press a to move left.\n" +
+		"Press d to move right.\n" +
+		"Enter to drop.\n",
+	)
+}
+
 func (g *Game) PrintBoard() {
 	// 打印游戏板
 	cmd := exec.Command("cmd", "/c", "cls")
 	cmd.Stdout = os.Stdout
 	cmd.Run()
-
+	g.PrintInfo()
 	fmt.Printf("|------------------------------|[SCORE:%d | LEVAL:%d]\n", g.score, g.level)
 	for i := range g.board {
 		fmt.Print("|")
