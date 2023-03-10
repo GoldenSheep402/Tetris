@@ -19,9 +19,9 @@ type Game struct {
 
 func (g *Game) BoardInit() {
 	// 初始化游戏板
-	g.board = make([][]int, 40)
+	g.board = make([][]int, define.HEIGHT)
 	for i := range g.board {
-		g.board[i] = make([]int, 15)
+		g.board[i] = make([]int, define.WIDTH)
 	}
 }
 
@@ -42,9 +42,9 @@ func (g *Game) DropTetromino() {
 	dropHeight := 999
 
 	// 下落高度
-	for x := 0; x < 15; x++ {
+	for x := 0; x < define.WIDTH; x++ {
 		top := 0
-		button := 40
+		button := define.HEIGHT
 		for y := 0; y <= 3; y++ {
 			if g.board[y][x] == 1 {
 				if top < y {
@@ -52,7 +52,7 @@ func (g *Game) DropTetromino() {
 				}
 			}
 		}
-		for y := 39; y >= 4; y-- {
+		for y := define.HEIGHT - 1; y >= 4; y-- {
 			if g.board[y][x] == 1 {
 				if button > y {
 					button = y
@@ -65,7 +65,7 @@ func (g *Game) DropTetromino() {
 	}
 
 	// 下落
-	for x := 0; x < 15; x++ {
+	for x := 0; x < define.WIDTH; x++ {
 		for y := 3; y >= 0; y-- {
 			if g.board[y][x] == 1 {
 				g.board[y+dropHeight-1][x] = 1
@@ -80,8 +80,8 @@ func (g *Game) ClearFullRows() {
 	clearRows := 0
 	flag := true
 
-	for y := 39; y >= 0; y-- {
-		for x := 0; x < 15; x++ {
+	for y := define.HEIGHT - 1; y >= 0; y-- {
+		for x := 0; x < define.WIDTH; x++ {
 			if g.board[y][x] == 0 {
 				flag = false
 				break
@@ -89,22 +89,20 @@ func (g *Game) ClearFullRows() {
 		}
 		if flag {
 			flag = false
+			g.level++
 			clearRows++
-			g.score += 100
+			g.score += 100 * g.level
 		}
 	}
 
 	for i := 0; i < clearRows; i++ {
-		for x := 0; x < 15; x++ {
-			for y := 39; y >= 0; y-- {
-				if g.board[y][x] == 1 && (y+i+1) < 40 {
-					g.board[y+i+1][x] = 1
-					g.board[y][x] = 0
-				}
+		for y := 38; y >= 0; y-- {
+			for x := 0; x < define.HEIGHT; x++ {
+				g.board[y+1][x] = g.board[y][x]
 			}
 		}
 	}
-	g.PrintBoard()
+
 }
 
 func (g *Game) Move(direction string) {
@@ -114,7 +112,7 @@ func (g *Game) Move(direction string) {
 		location--
 		// 向左移动
 		for y := 0; y <= 3; y++ {
-			for x := 1; x < 15; x++ {
+			for x := 1; x < define.WIDTH; x++ {
 				if g.board[y][x] == 1 {
 					if g.board[y][x-1] == 0 {
 						g.board[y][x-1] = 1
@@ -160,10 +158,21 @@ func rotateClockwise(matrix [][]int, row, col int) {
 	}
 }
 
+func (g *Game) CheckGameOver() {
+	// 检查游戏是否结束
+	for x := 0; x < define.WIDTH; x++ {
+		if g.board[4][x] == 1 {
+			fmt.Printf("Game Over!\n[Your Score: %d]", g.score)
+			os.Exit(0)
+		}
+	}
+}
+
 func (g *Game) Start() {
 	for {
 		g.NewTetrominoIn()
 		g.PrintBoard()
+		g.CheckGameOver()
 
 		for {
 			reader := bufio.NewReader(os.Stdin)
@@ -177,10 +186,10 @@ func (g *Game) Start() {
 				g.PrintBoard()
 			}
 		}
+
 		g.DropTetromino()
 		g.ClearFullRows()
 	}
-	fmt.Println("Game Over!")
 }
 
 func (g *Game) PrintBoard() {
@@ -189,9 +198,12 @@ func (g *Game) PrintBoard() {
 	cmd.Stdout = os.Stdout
 	cmd.Run()
 
-	fmt.Print("--------------------------------\n")
+	fmt.Printf("|------------------------------|[SCORE:%d | LEVAL:%d]\n", g.score, g.level)
 	for i := range g.board {
 		fmt.Print("|")
+		if i == 4 {
+			fmt.Print("------------------------------|\n|")
+		}
 		for j := range g.board[i] {
 			if g.board[i][j] == 0 {
 				fmt.Print("  ")
@@ -201,7 +213,7 @@ func (g *Game) PrintBoard() {
 		}
 		fmt.Printf("|\n")
 	}
-	fmt.Print("--------------------------------\nScore: ", g.score)
+	fmt.Print("|------------------------------|\n")
 }
 
 func RandomTetromino() [][]int {
@@ -222,12 +234,7 @@ func RandomTetromino() [][]int {
 }
 
 func main() {
-	game := Game{
-		board:  make([][]int, 40),
-		active: make([][]int, 4),
-		score:  0,
-		level:  1,
-	}
+	game := Game{}
 	game.BoardInit()
 	game.Start()
 }

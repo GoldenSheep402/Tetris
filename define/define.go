@@ -10,6 +10,11 @@ const (
 	Z
 )
 
+const (
+	WIDTH  = 15
+	HEIGHT = 25
+)
+
 var Tetrominoes = [][][]int{
 	{
 		{0, 0, 0, 0},
