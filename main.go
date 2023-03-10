@@ -6,7 +6,6 @@ import (
 	"math/rand"
 	"os"
 	"os/exec"
-	"runtime"
 	"tetris/define"
 	"time"
 )
@@ -46,7 +45,7 @@ func (g *Game) DropTetromino() {
 	for x := 0; x < 15; x++ {
 		top := 0
 		button := 40
-		for y := 0; y < 3; y++ {
+		for y := 0; y <= 3; y++ {
 			if g.board[y][x] == 1 {
 				if top < y {
 					top = y
@@ -60,7 +59,7 @@ func (g *Game) DropTetromino() {
 				}
 			}
 		}
-		if dropHeight > (button - top) {
+		if (top != 0) && (dropHeight > (button - top)) {
 			dropHeight = button - top
 		}
 	}
@@ -80,17 +79,18 @@ func (g *Game) ClearFullRows() {
 	// 消除满行
 	clearRows := 0
 	flag := true
-	
+
 	for y := 39; y >= 0; y-- {
 		for x := 0; x < 15; x++ {
-			if g.board[y][x] == 1 {
+			if g.board[y][x] == 0 {
 				flag = false
 				break
 			}
-			if flag {
-				clearRows++
-				g.score += 100
-			}
+		}
+		if flag {
+			flag = false
+			clearRows++
+			g.score += 100
 		}
 	}
 
@@ -104,6 +104,60 @@ func (g *Game) ClearFullRows() {
 			}
 		}
 	}
+	g.PrintBoard()
+}
+
+func (g *Game) Move(direction string) {
+	location := 0
+	switch direction {
+	case "a":
+		location--
+		// 向左移动
+		for y := 0; y <= 3; y++ {
+			for x := 1; x < 15; x++ {
+				if g.board[y][x] == 1 {
+					if g.board[y][x-1] == 0 {
+						g.board[y][x-1] = 1
+						g.board[y][x] = 0
+					}
+				}
+			}
+		}
+	case "d":
+		location++
+		// 向右移动
+		for y := 0; y <= 3; y++ {
+			for x := 13; x >= 0; x-- {
+				if g.board[y][x] == 1 {
+					if g.board[y][x+1] == 0 {
+						g.board[y][x+1] = 1
+						g.board[y][x] = 0
+					}
+				}
+			}
+		}
+	case "e":
+		// 旋转
+		rotateClockwise(g.board, 0, location)
+	}
+}
+
+func rotateClockwise(matrix [][]int, row, col int) {
+	// 矩阵转置
+	for i := row; i < row+4; i++ {
+		for j := col; j < col+4; j++ {
+			if i < j {
+				matrix[i][j], matrix[j][i] = matrix[j][i], matrix[i][j]
+			}
+		}
+	}
+
+	// 每行反转
+	for i := row; i < row+4; i++ {
+		for j := col; j < col+2; j++ {
+			matrix[i][j], matrix[i][col+3-j] = matrix[i][col+3-j], matrix[i][j]
+		}
+	}
 }
 
 func (g *Game) Start() {
@@ -111,32 +165,30 @@ func (g *Game) Start() {
 		g.NewTetrominoIn()
 		g.PrintBoard()
 
-		// 等待用户按下回车键
-		reader := bufio.NewReader(os.Stdin)
-		_, _, err := reader.ReadRune()
-
-		if err != nil {
-
-			break
-		} else {
-			// 检查操作系统是否是 Windows
-			if runtime.GOOS == "windows" {
-				// 在 Windows 上清除控制台屏幕的内容
-				cmd := exec.Command("cmd", "/c", "cls")
-				cmd.Stdout = os.Stdout
-				cmd.Run()
-
-				// 执行 DropTetromino 函数
-				g.DropTetromino()
-				g.ClearFullRows()
+		for {
+			reader := bufio.NewReader(os.Stdin)
+			input, _, err := reader.ReadRune()
+			if err != nil {
+				break
+			} else if input == '\r' { // 回车键
+				break
+			} else {
+				g.Move(string(input))
+				g.PrintBoard()
 			}
 		}
+		g.DropTetromino()
+		g.ClearFullRows()
 	}
 	fmt.Println("Game Over!")
 }
 
 func (g *Game) PrintBoard() {
 	// 打印游戏板
+	cmd := exec.Command("cmd", "/c", "cls")
+	cmd.Stdout = os.Stdout
+	cmd.Run()
+
 	fmt.Print("--------------------------------\n")
 	for i := range g.board {
 		fmt.Print("|")
@@ -147,8 +199,9 @@ func (g *Game) PrintBoard() {
 				fmt.Print("■ ")
 			}
 		}
-		fmt.Print("|\n")
+		fmt.Printf("|\n")
 	}
+	fmt.Print("--------------------------------\nScore: ", g.score)
 }
 
 func RandomTetromino() [][]int {
