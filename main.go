@@ -130,10 +130,15 @@ func (g *Game) Drop(startLine int) {
 }
 
 func (g *Game) Move(direction string) {
-	location := 0
+	driectX := 0
 	switch direction {
 	case "a":
-		location--
+		for y := 0; y < 4; y++ {
+			if g.board[y][0] == 1 {
+				return
+			}
+		}
+		driectX--
 		// 向左移动
 		for y := 0; y <= 3; y++ {
 			for x := 1; x < define.WIDTH; x++ {
@@ -146,7 +151,12 @@ func (g *Game) Move(direction string) {
 			}
 		}
 	case "d":
-		location++
+		for y := 0; y < 4; y++ {
+			if g.board[y][define.WIDTH-1] == 1 {
+				return
+			}
+		}
+		driectX++
 		// 向右移动
 		for y := 0; y <= 3; y++ {
 			for x := define.WIDTH - 2; x >= 0; x-- {
@@ -160,11 +170,11 @@ func (g *Game) Move(direction string) {
 		}
 	case "e":
 		// 旋转
-		rotateClockwise(g.board, 0, location)
+		rotateClockwise(g.board, 0, driectX)
 	}
 }
 
-func rotateClockwise(matrix [][]int, row, col int) {
+func rotateClockwise(matrix [][]int, row int, col int) {
 	// 矩阵转置
 	for i := row; i < row+4; i++ {
 		for j := col; j < col+4; j++ {
