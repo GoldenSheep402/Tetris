@@ -76,11 +76,11 @@ func (g *Game) DropTetromino() {
 }
 
 func (g *Game) ClearFullRows() {
-	// 消除满行
 	clearRows := 0
 	flag := true
 
 	for y := define.HEIGHT - 1; y >= 0; y-- {
+		flag = true
 		for x := 0; x < define.WIDTH; x++ {
 			if g.board[y][x] == 0 {
 				flag = false
@@ -88,21 +88,61 @@ func (g *Game) ClearFullRows() {
 			}
 		}
 		if flag {
-			flag = false
+
+			// 去除被消去的行
+			for x := 0; x < define.WIDTH; x++ {
+				g.board[y][x] = 0
+			}
+
+			g.Drop(y)
+
 			g.level++
 			clearRows++
 			g.score += 100
 		}
 	}
+}
 
-	for i := 0; i < clearRows; i++ {
-		for y := define.HEIGHT - 2; y >= 0; y-- {
-			for x := 0; x < define.WIDTH; x++ {
-				g.board[y+1][x] = g.board[y][x]
+// 传入被消去的行标
+func (g *Game) Drop(startLine int) {
+	// 去除被消去的行
+	for x := 0; x < define.WIDTH; x++ {
+		g.board[startLine][x] = 0
+	}
+
+	// 上方掉落
+	for y := startLine - 1; y >= 0; y-- {
+		for x := 0; x < define.WIDTH; x++ {
+			if g.board[y][x] == 1 {
+				//
+				for dropY := y + 1; dropY < define.HEIGHT; dropY++ {
+					if g.board[dropY][x] == 1 {
+						break
+					} else {
+						g.board[dropY][x] = 1
+						g.board[dropY-1][x] = 0
+					}
+				}
 			}
 		}
 	}
 
+	// Drop the blocks below the cleared line
+	for y := startLine + 1; y < define.HEIGHT; y++ {
+		for x := 0; x < define.WIDTH; x++ {
+			if g.board[y][x] == 1 {
+				// Drop this block down until it hits the bottom or another block
+				for dropY := y - 1; dropY >= 0; dropY-- {
+					if g.board[dropY][x] == 1 {
+						break
+					} else {
+						g.board[dropY][x] = 1
+						g.board[dropY+1][x] = 0
+					}
+				}
+			}
+		}
+	}
 }
 
 func (g *Game) Move(direction string) {
