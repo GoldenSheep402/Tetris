@@ -91,13 +91,13 @@ func (g *Game) ClearFullRows() {
 			flag = false
 			g.level++
 			clearRows++
-			g.score += 100 * g.level
+			g.score += 100
 		}
 	}
 
 	for i := 0; i < clearRows; i++ {
-		for y := 38; y >= 0; y-- {
-			for x := 0; x < define.HEIGHT; x++ {
+		for y := define.HEIGHT - 2; y >= 0; y-- {
+			for x := 0; x < define.WIDTH; x++ {
 				g.board[y+1][x] = g.board[y][x]
 			}
 		}
@@ -234,7 +234,9 @@ func RandomTetromino() [][]int {
 }
 
 func main() {
-	game := Game{}
+	game := Game{
+		level: 1,
+	}
 	game.BoardInit()
 	game.Start()
 }
