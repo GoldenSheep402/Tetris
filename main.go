@@ -105,42 +105,26 @@ func (g *Game) ClearFullRows() {
 
 // 传入被消去的行标
 func (g *Game) Drop(startLine int) {
-	// 去除被消去的行
 	for x := 0; x < define.WIDTH; x++ {
-		g.board[startLine][x] = 0
-	}
-
-	// 上方掉落
-	for y := startLine - 1; y >= 0; y-- {
-		for x := 0; x < define.WIDTH; x++ {
+		var dropHeight int = 0
+		top := startLine
+		for y := startLine; y >= 0; y-- {
 			if g.board[y][x] == 1 {
-				//
-				for dropY := y + 1; dropY < define.HEIGHT; dropY++ {
-					if g.board[dropY][x] == 1 {
-						break
-					} else {
-						g.board[dropY][x] = 1
-						g.board[dropY-1][x] = 0
-					}
-				}
+				top = y
+				break
 			}
 		}
-	}
 
-	// Drop the blocks below the cleared line
-	for y := startLine + 1; y < define.HEIGHT; y++ {
-		for x := 0; x < define.WIDTH; x++ {
-			if g.board[y][x] == 1 {
-				// Drop this block down until it hits the bottom or another block
-				for dropY := y - 1; dropY >= 0; dropY-- {
-					if g.board[dropY][x] == 1 {
-						break
-					} else {
-						g.board[dropY][x] = 1
-						g.board[dropY+1][x] = 0
-					}
-				}
+		for y := top; y < define.HEIGHT; y++ {
+			if y == define.HEIGHT-1 || g.board[y+1][x] == 1 {
+				dropHeight = y - top
+				break
 			}
+		}
+
+		for y := top; y > 5; y-- {
+			g.board[y+dropHeight][x] = g.board[y][x]
+			g.board[y][x] = 0
 		}
 	}
 }
@@ -165,7 +149,7 @@ func (g *Game) Move(direction string) {
 		location++
 		// 向右移动
 		for y := 0; y <= 3; y++ {
-			for x := 13; x >= 0; x-- {
+			for x := define.WIDTH - 2; x >= 0; x-- {
 				if g.board[y][x] == 1 {
 					if g.board[y][x+1] == 0 {
 						g.board[y][x+1] = 1
