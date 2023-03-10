@@ -1,4 +1,4 @@
-silly game
+sb game
 
 still building
 
