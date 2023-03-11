@@ -6,6 +6,8 @@ use e to move right
 
 use a to move left
 
+use s to drop
+
 use r to turn (there is something wrong---)
 
 there is still many things to solve
