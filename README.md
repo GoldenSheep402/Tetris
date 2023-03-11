@@ -19,4 +19,4 @@ go build
 ```
 
 
-<img src="https://user-images.githubusercontent.com/67376942/224466129-39ddb94f-2466-48dd-9c3f-acb951250dee.png" width = "360" height = "500" alt="demo" align=center />
+<img src="https://user-images.githubusercontent.com/67376942/224466129-39ddb94f-2466-48dd-9c3f-acb951250dee.png" width = "360" height = "750" alt="demo" align=center />
