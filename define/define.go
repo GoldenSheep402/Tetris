@@ -1,5 +1,17 @@
 package define
 
+type Game struct {
+	Board  [][]int
+	Active [][]int
+	Score  int
+	Level  int
+}
+
+const (
+	WIDTH  = 15
+	HEIGHT = 20
+)
+
 const (
 	I = iota
 	J
@@ -8,11 +20,6 @@ const (
 	S
 	T
 	Z
-)
-
-const (
-	WIDTH  = 15
-	HEIGHT = 20
 )
 
 var Tetrominoes = [][][]int{
