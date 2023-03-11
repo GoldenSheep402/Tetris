@@ -25,7 +25,7 @@ func PrintBoard(g *define.Game) {
 	cmd.Stdout = os.Stdout
 	cmd.Run()
 	PrintInfo()
-	fmt.Printf("|------------------------------|[SCORE:%d | LEVAL:%d]\n", g.Score, g.Level)
+	fmt.Printf("[SCORE:%d | LEVAL:%d]\n|------------------------------|\n", g.Score, g.Level)
 	for i := range g.Board {
 		fmt.Print("|")
 		if i == 4 {
