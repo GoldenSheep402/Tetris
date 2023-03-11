@@ -24,6 +24,8 @@ func Start(g *define.Game) {
 		ui.PrintBoard(g)
 		CheckGameOver(g)
 
+		var x int = 0
+
 		for {
 			reader := bufio.NewReader(os.Stdin)
 			input, _, err := reader.ReadRune()
@@ -32,7 +34,7 @@ func Start(g *define.Game) {
 			} else if input == '\r' { // 回车键
 				break
 			} else {
-				Move(g, string(input))
+				Move(g, string(input), &x)
 				ui.PrintBoard(g)
 			}
 		}
@@ -81,8 +83,7 @@ func CheckGameOver(g *define.Game) {
 	}
 }
 
-func Move(g *define.Game, direction string) {
-	driectX := 0
+func Move(g *define.Game, direction string, driectX *int) {
 	switch direction {
 	case "a":
 		for y := 0; y < 4; y++ {
@@ -90,7 +91,7 @@ func Move(g *define.Game, direction string) {
 				return
 			}
 		}
-		driectX--
+		*driectX--
 		// 向左移动
 		for y := 0; y <= 3; y++ {
 			for x := 1; x < define.WIDTH; x++ {
@@ -108,7 +109,7 @@ func Move(g *define.Game, direction string) {
 				return
 			}
 		}
-		driectX++
+		*driectX++
 		// 向右移动
 		for y := 0; y <= 3; y++ {
 			for x := define.WIDTH - 2; x >= 0; x-- {
@@ -122,24 +123,33 @@ func Move(g *define.Game, direction string) {
 		}
 	case "e":
 		// 旋转
-		rotateClockwise(g.Board, 0, driectX)
+		rotateClockwise(g.Board, 0, *driectX)
 	}
 }
 
 func rotateClockwise(matrix [][]int, row int, col int) {
-	// 矩阵转置
-	for i := row; i < row+4; i++ {
-		for j := col; j < col+4; j++ {
-			if i < j {
-				matrix[i][j], matrix[j][i] = matrix[j][i], matrix[i][j]
-			}
+	// 防止溢出
+	if col+4 > define.WIDTH || row+4 > define.HEIGHT {
+		return
+	}
+
+	// 定义临时矩阵
+	temp := make([][]int, 4)
+	for i := range temp {
+		temp[i] = make([]int, 4)
+	}
+
+	// 拷贝要旋转的4x4矩阵到临时矩阵中
+	for i := 0; i < 4; i++ {
+		for j := 0; j < 4; j++ {
+			temp[i][j] = matrix[row+i][col+j]
 		}
 	}
 
-	// 每行反转
-	for i := row; i < row+4; i++ {
-		for j := col; j < col+2; j++ {
-			matrix[i][j], matrix[i][col+3-j] = matrix[i][col+3-j], matrix[i][j]
+	// 对临时矩阵进行旋转操作
+	for i := 0; i < 4; i++ {
+		for j := 0; j < 4; j++ {
+			matrix[row+i][col+j] = temp[j][3-i]
 		}
 	}
 }
