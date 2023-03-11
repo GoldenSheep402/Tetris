@@ -10,12 +10,12 @@ import (
 func PrintInfo() {
 	fmt.Print("Tetris Game(SB version)\n" +
 		"Author: GS\n" + "" +
-		"Just write for fun." +
-		"Use e to turn the tetromino \n" +
-		"(You should decide the direction before move left or right)\n" +
+		"Just write for fun.\n" +
+		"[Select your choice then ENTER]\n" +
+		"Use s to turn the tetromino \n" +
 		"Press a to move left.\n" +
 		"Press d to move right.\n" +
-		"Enter to drop.\n",
+		"Press blank to drop.\n",
 	)
 }
 

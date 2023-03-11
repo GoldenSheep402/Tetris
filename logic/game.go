@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+	"strings"
 	"tetris/define"
 	"tetris/ui"
+	"tetris/utils"
 	"time"
 )
 
@@ -31,7 +33,7 @@ func Start(g *define.Game) {
 			input, _, err := reader.ReadRune()
 			if err != nil {
 				break
-			} else if input == '\r' { // 回车键
+			} else if input == 's' || input == 'S' {
 				break
 			} else {
 				Move(g, string(input), &x)
@@ -77,13 +79,16 @@ func CheckGameOver(g *define.Game) {
 	// 检查游戏是否结束
 	for x := 0; x < define.WIDTH; x++ {
 		if g.Board[4][x] == 1 {
-			fmt.Printf("[Game Over!]\n[Your Score: %d]\nThank you for playing!", g.Score)
+			fmt.Printf("[Game Over!]\n[Your Score: %d]\nThank you for playing!\n", g.Score)
 			os.Exit(0)
 		}
 	}
 }
 
 func Move(g *define.Game, direction string, driectX *int) {
+	// 大写转小写
+	direction = strings.ToLower(direction)
+
 	switch direction {
 	case "a":
 		for y := 0; y < 4; y++ {
@@ -128,7 +133,7 @@ func Move(g *define.Game, direction string, driectX *int) {
 }
 
 func rotateClockwise(matrix [][]int, row int, col int) {
-	// 防止溢出
+
 	if col+4 > define.WIDTH || row+4 > define.HEIGHT {
 		return
 	}
@@ -215,32 +220,76 @@ func ClearFullRows(g *define.Game) {
 
 			g.Level++
 			clearRows++
-			g.Score += 100
+			g.Score += 100 * g.Level
 		}
 	}
 }
 
+// startLine: 消去的行
+/*for x := 0; x < define.WIDTH; x++ {
+	var dropHeight int = 0
+	top := startLine
+	for y := startLine; y >= 0; y-- {
+		if g.Board[y][x] == 1 {
+			top = y
+			break
+		}
+	}
+
+	for y := top; y < define.HEIGHT; y++ {
+		if y == define.HEIGHT-1 || g.Board[y+1][x] == 1 {
+			dropHeight = y - top
+			break
+		}
+	}
+
+	for y := top; y > 5; y-- {
+		g.Board[y+dropHeight][x] = g.Board[y][x]
+		g.Board[y][x] = 0
+	}
+}*/
 func Drop(g *define.Game, startLine int) {
-	for x := 0; x < define.WIDTH; x++ {
-		var dropHeight int = 0
+	column := 0
+	for column < define.WIDTH {
+		left, right := column, column
+		for y := startLine; y >= 5; y-- {
+			if g.Board[y][column] == 1 {
+				visited := make([][]bool, len(g.Board))
+				for i := range visited {
+					visited[i] = make([]bool, len(g.Board[i]))
+				}
+				utils.Dfs(g.Board, y, column, visited, &left, &right)
+				break
+			}
+		}
+
+		var dropHeight int = 999
 		top := startLine
-		for y := startLine; y >= 0; y-- {
-			if g.Board[y][x] == 1 {
-				top = y
-				break
+
+		for i := left; i <= right; i++ {
+			for y := startLine; y >= 0; y-- {
+				if g.Board[y][i] == 1 {
+					top = y
+					break
+				}
+			}
+
+			for y := top + 1; y <= define.HEIGHT; y++ {
+				if y == define.HEIGHT || g.Board[y][i] == 1 {
+					if dropHeight > y-top-1 {
+						dropHeight = y - top - 1
+					}
+					break
+				}
+			}
+
+		}
+		for i := left; i <= right; i++ {
+			for y := top; y >= 5; y-- {
+				g.Board[y+dropHeight][i] = g.Board[y][i]
+				g.Board[y][i] = 0
 			}
 		}
-
-		for y := top; y < define.HEIGHT; y++ {
-			if y == define.HEIGHT-1 || g.Board[y+1][x] == 1 {
-				dropHeight = y - top
-				break
-			}
-		}
-
-		for y := top; y > 5; y-- {
-			g.Board[y+dropHeight][x] = g.Board[y][x]
-			g.Board[y][x] = 0
-		}
+		column = right + 1
 	}
 }
